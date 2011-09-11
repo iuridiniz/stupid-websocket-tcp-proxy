@@ -7,7 +7,7 @@ from twisted.application import service, internet
 from twisted.web import static
 from twisted.protocols.portforward import ProxyFactory
 
-from lib.websocket import WebSocketHandler, WebSocketSite, WebSocketFactory
+from lib.websocket import WebSocketSite, WebSocketFactory
 
 from ConfigParser import SafeConfigParser as ConfigParser
 
