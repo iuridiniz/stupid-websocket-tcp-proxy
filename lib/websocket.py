@@ -396,6 +396,8 @@ class WebSocketTransport(object):
     def __init__(self, request):
         self._request = request
         self._connected = 1
+        self._paused = False
+        self._pending_frames = []
         self._request.notifyFinish().addErrback(self._connectionLost)
 
     def _attachHandler(self, handler):
@@ -415,6 +417,8 @@ class WebSocketTransport(object):
         Forward connection lost event to the L{WebSocketHandler}.
         """
         self._connected = 0
+        self._paused = False
+        self._pending_frames = []
         self._handler.connectionLost(reason)
         del self._request.transport
         del self._request
@@ -445,7 +449,10 @@ class WebSocketTransport(object):
         @type frame: C{str}
         """
         if self._connected:
-            self._request.write("\x00%s\xff" % frame)
+            if self._paused:
+                self._pending_frames.append(frame)
+            else:
+                self._request.write("\x00%s\xff" % frame)
 
     def writeSequence(self, frames):
         """
@@ -462,11 +469,21 @@ class WebSocketTransport(object):
             self._request.transport.loseConnection()
 
     def pauseProducing(self):
-        pass
+        self._paused = True
+        self._handler.pauseProducing()
 
     def resumeProducing(self):
-        pass
+        self._paused = False
+        self._sendPendingFrames()
+        self._handler.resumeProducing()
 
+    def _sendPendingFrames(self):
+        """
+        Write pending frames
+        """
+        if not self._paused:
+            self.writeSequence(self._pending_frames)
+            self._pending_frames = []
 
 class WebSocketHybiTransport(WebSocketTransport):
     """
@@ -554,7 +571,27 @@ class WebSocketHandler(object):
         Create the handler, with the given transport
         """
         self.transport = transport
+        self._paused = False
+        self._pending_frames = []
 
+    def _frameReceived(self, frame):
+        if self._paused:
+            self._pending_frames.append(frame)
+        else:
+            self.frameReceived(frame)
+
+    def _processPedingFrames(self):
+        if not self._paused:
+            for frame in self._pending_frames:
+                self.frameReceived(frame)
+            self._pending_frames = []
+
+    def pauseProducing(self):
+        self._paused = 1
+
+    def resumeProducing(self):
+        self._paused = 0
+        self._processPedingFrames()
 
     def frameReceived(self, frame):
         """
@@ -723,7 +760,7 @@ class WebSocketFrameDecoder(object):
             raise IncompleteFrame()
 
         frame = "".join(self._data[:-1]) + data[:endIndex]
-        self.handler.frameReceived(frame)
+        self.handler._frameReceived(frame)
 
         remainingData = data[endIndex + 1:]
         self._addRemainingData(remainingData)
@@ -935,7 +972,7 @@ class WebSocketHybiFrameDecoder(WebSocketFrameDecoder):
             # assume it's valid UTF-8 and let the client handle the rest
             if len(frame) > self.MAX_LENGTH:
                 self.handler.frameLengthExceeded()
-            self.handler.frameReceived(frame)
+            self.handler._frameReceived(frame)
         elif self._opcode == OPCODE_BINARY:
             if len(frame) > self.MAX_BINARY_LENGTH:
                 self.handler.frameLengthExceeded()
