@@ -1,7 +1,7 @@
 [webserver]
 bind = 127.0.0.1
 port = 9091
-public = public/
+root = public/
 
 [url-maps]
 ; Maps url into server:port

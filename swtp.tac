@@ -3,7 +3,6 @@
 # You can run this .tac file directly with:
 #    twistd -ny swtp.tac
 
-
 from twisted.application import service, internet
 from twisted.web import static
 from twisted.protocols.portforward import ProxyFactory
@@ -11,7 +10,6 @@ from twisted.protocols.portforward import ProxyFactory
 from lib.websocket import WebSocketHandler, WebSocketSite, WebSocketFactory
 
 from ConfigParser import SafeConfigParser as ConfigParser
-
 
 import os
 run_dir = os.path.abspath(os.path.dirname(__file__))
@@ -29,13 +27,13 @@ def getWebService(config_path):
     config.read(config_path)
     bind = config.get("webserver", "bind")
     port = int(config.get("webserver", "port"))
-    public = config.get("webserver", "public")
+    root_path = config.get("webserver", "root")
 
-    if not public.startswith("/"):
-        public = os.path.join(os.path.dirname(config_path), public)
+    if not root_path.startswith("/"):
+        root_path = os.path.join(os.path.dirname(config_path), root_path)
 
     # create a resource to serve static files
-    root = static.File(public)
+    root = static.File(root_path)
     web_server = WebSocketSite(root)
 
     # setup proxies
