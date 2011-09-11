@@ -389,7 +389,7 @@ class WebSocketTransport(object):
     Transport abstraction over WebSocket, providing classic Twisted methods and
     callbacks.
     """
-    implements(interfaces.ITransport)
+    implements(interfaces.ITransport, interfaces.IPushProducer)
 
     _handler = None
 
@@ -565,6 +565,8 @@ class WebSocketHandler(object):
     @ivar transport: a C{WebSocketTransport} instance.
     @type: L{WebSocketTransport}
     """
+
+    implements(interfaces.IPushProducer)
 
     def __init__(self, transport):
         """
