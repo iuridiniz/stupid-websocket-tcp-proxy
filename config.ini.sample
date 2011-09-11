@@ -1,12 +1,12 @@
 [webserver]
 bind = 127.0.0.1
-port = 9090
+port = 9091
 public = public/
 
 [url-maps]
 ; Maps url into server:port
-/telnet = localhost:23
-/ssh = localhost:22
-/stomp = localhost:61613
-/http = www.google.com:80
+/proxy/telnet = localhost:23
+/proxy/ssh = localhost:22
+/proxy/stomp = localhost:61613
+/proxy/http = www.google.com:80
 
