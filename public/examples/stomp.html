@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <title>WebSocket example: Stomp Proxy</title>
+    <script type="text/javascript" src="/protocols/stomp.js"></script>
+    <!-- <script type="text/javascript" src="https://raw.github.com/iuridiniz/stomp-websocket/master/src/stomp.js"></script> -->
+    <script type="text/javascript">
+        var url = "ws://" + window.location.hostname + ':' + window.location.port + "/proxy/stomp";
+        var login = "test";
+        var passcode = "testpass";
+        var client = Stomp.client(url);
+
+        var topics = {};
+        
+        msg_callback = function(message) {
+            // called when the client receives a Stomp message from the server
+            if (message.body) {
+                var target = document.getElementById("received");
+                target.value = target.value + message.body;
+            } else {
+                console.log("got empty message");
+            }
+        }
+
+        connect_callback = function() {
+        // called back after the client is connected and authenticated to the Stomp server
+            console.log("Connected");
+            id = client.subscribe("/topic/home", msg_callback);
+        };
+
+        client.debug = function (str) {
+            console.log(str);
+        }
+
+        client.onreceive = msg_callback;
+
+        error_callback = function(error) {
+        // display the error's message header:
+            console.log(error);
+        };
+        
+        client.connect(login, passcode, connect_callback, error_callback);
+
+        function send_data() {
+            var topic = document.getElementById("topic_input").value;
+            client.send(topic, {}, 
+                document.getElementById("send_input").value);
+        }
+
+        function send_subscribe() {
+            var topic = document.getElementById("sub_input").value;
+            var id = client.subscribe(topic, msg_callback);
+            topics[topic] = id;
+        }
+
+        function send_unsubscribe() {
+            topic = document.getElementById("sub_input").value
+            client.unsubscribe(topics[topic]);
+        }
+
+    </script>
+  </head>
+  <body>
+    <h1>WebSocket example: Stomp Proxy</h1>
+    <form>
+      <label for="send_input">Text to send</label>
+      <input type="text" name="send_input" id="send_input"/>
+      <input type="text" name="topic_input" id="topic_input" value="/topic/home"/>
+      <input type="submit" name="send_submit" id="send_submit" value="Send"
+             onclick="send_data(); return false"/>
+      <br/>
+      <label for="received">Received text</label>
+      <textarea name="received" id="received"></textarea>
+      <br/>
+      <label for="send_subscribe">(Un)subscribe</label>
+      <input type="text" name="sub_input" id="sub_input" value="/queue/test"/>
+      <input type="submit" name="sub_submit" id="sub_submit" value="Subscribe"
+             onclick="send_subscribe(); return false"/>
+      <input type="submit" name="unsub_submit" id="unsub_submit" value="Unsubscribe"
+             onclick="send_unsubscribe(); return false"/>
+
+    </form>
+  </body>
+</html>

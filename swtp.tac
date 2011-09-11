@@ -5,9 +5,12 @@
 
 
 from twisted.application import service, internet
-from twisted.web import static, server
+from twisted.web import static
+from twisted.protocols.portforward import ProxyFactory
 
-from ConfigParser import ConfigParser
+from lib.websocket import WebSocketHandler, WebSocketSite, WebSocketFactory
+
+from ConfigParser import SafeConfigParser as ConfigParser
 
 
 import os
@@ -32,9 +35,17 @@ def getWebService(config_path):
         public = os.path.join(os.path.dirname(config_path), public)
 
     # create a resource to serve static files
+    root = static.File(public)
+    web_server = WebSocketSite(root)
 
-    fileServer = server.Site(static.File(public))
-    return internet.TCPServer(8080, fileServer, interface=bind)
+    # setup proxies
+    for url, dest in config.items('url-maps'):
+        tcp_host, tcp_port = dest.split(':')
+        proxy = ProxyFactory(tcp_host, int(tcp_port))
+        ws = WebSocketFactory(proxy)
+        web_server.addHandler(url, ws.buildHandler)
+
+    return internet.TCPServer(port, web_server, interface=bind)
 
 # this is the core part of any tac file, the creation of the root-level
 # application object
