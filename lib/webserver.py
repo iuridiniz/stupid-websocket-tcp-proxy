@@ -65,7 +65,7 @@ def getWebServer(config_path):
     """
 
     if not config_path.startswith("/"):
-        raise ValueError, "config_path must be a absolute path"
+        raise ValueError, "config_path must be an absolute path"
 
     config = ConfigParser()
     config.read(config_path)
