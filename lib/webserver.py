@@ -43,7 +43,7 @@ __credits__     = ["Iuri Diniz"]
 __license__     = "Simplified BSD License"
 __version__     = "0.1"
 __maintainer__  = "Iuri Diniz"
-__email__       = "iuridiniz@gmail.com"
+__email__       = "iuridiniz@REMOVE@gmail.com"
 __status__      = "Development"
 
 __all__ = ["WebServer", "getWebServer"]
