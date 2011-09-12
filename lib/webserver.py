@@ -59,35 +59,37 @@ class WebServer(WebSocketSite):
     def getService(self):
         return internet.TCPServer(self._port, self, interface=self._interface)
 
-def getWebServer(config_path):
-    """
-    Return a service suitable for creating an application object.
-    """
-
-    if not config_path.startswith("/"):
-        raise ValueError, "config_path must be an absolute path"
-
-    config = ConfigParser()
-    config.read(config_path)
-    bind = config.get("webserver", "bind")
-    port = int(config.get("webserver", "port"))
-    root_path = config.get("webserver", "root")
-
-    if not root_path.startswith("/"):
-        root_path = os.path.join(os.path.dirname(config_path), root_path)
-
-    # create a resource to serve static files
-    root = static.File(root_path)
-    web_server = WebServer(root, port, bind)
-
-    # setup proxies
-    for url, dest in config.items('url-maps'):
-        tcp_host, tcp_port = dest.split(':')
-        proxy = ProxyFactory(tcp_host, int(tcp_port))
-        ws = WebSocketFactory(proxy)
-        web_server.addHandler(url, ws.buildHandler)
-
-    return web_server
+    @classmethod
+    def getWebServer(cls, config_path):
+        """
+        Return a service suitable for creating an application object.
+        """
+    
+        if not config_path.startswith("/"):
+            raise ValueError, "config_path must be an absolute path"
+    
+        config = ConfigParser()
+        config.read(config_path)
+        bind = config.get("webserver", "bind")
+        port = int(config.get("webserver", "port"))
+        root_path = config.get("webserver", "root")
+    
+        if not root_path.startswith("/"):
+            root_path = os.path.join(os.path.dirname(config_path), root_path)
+    
+        # create a resource to serve static files
+        root = static.File(root_path)
+        web_server = cls(root, port, bind)
+    
+        # setup proxies
+        if config.has_section('url-maps'):
+            for url, dest in config.items('url-maps'):
+                tcp_host, tcp_port = dest.split(':')
+                proxy = ProxyFactory(tcp_host, int(tcp_port))
+                ws = WebSocketFactory(proxy)
+                web_server.addHandler(url, ws.buildHandler)
+    
+        return web_server
 
 if __name__ == "__main__":
     pass

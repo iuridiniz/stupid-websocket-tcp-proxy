@@ -32,7 +32,7 @@
 
 from twisted.application import service
 
-from lib.webserver import getWebServer
+from lib.webserver import WebServer
 
 import os
 
@@ -44,6 +44,6 @@ config_file = os.path.join(run_dir, "config.ini")
 application = service.Application("Stupid WebSocket TCP Proxy")
 
 # attach the service to its parent application
-service = getWebServer(config_file).getService()
+service = WebServer.getWebServer(config_file).getService()
 
 service.setServiceParent(application)
