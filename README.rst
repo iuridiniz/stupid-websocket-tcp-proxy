@@ -2,17 +2,28 @@
 Stupid WebSocket TCP Proxy (SWTP)
 ==================================
 
+Description
+-----------
+
 **A very stupid WebSocket server in order to proxy TCP connections**
-
-Requirements:
-
-* python
-* twisted
 
 It exposes an existing service over WebSocket, so a javascript application can communicate 
 with desired service. *It's necessary to use some implentation of the service protocol over WebSocket.*
 
-Quick start::
+
+Requirements
+------------
+
+Software pre-requisites:
+
+* python
+* twisted
+
+
+Quick start
+-----------
+
+Linux::
 
     $ cp config.ini.sample config.ini
     $ twistd -n -y swtp.tac
