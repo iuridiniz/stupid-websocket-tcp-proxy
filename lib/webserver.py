@@ -48,8 +48,7 @@ __maintainer__  = "Iuri Diniz"
 __email__       = "iuridiniz@REMOVE@gmail.com"
 __status__      = "Development"
 
-__all__ = ["WebServer", "getWebServer"]
-
+__all__ = ["WebServer"]
 
 class StompProtocolFixer(WebSocketWrapperProtocol):
     def __init__(self, *args, **kwargs):
