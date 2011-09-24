@@ -8,7 +8,7 @@ port = 9091
 root = public/
 
 [url-maps]
-; Maps url into server:port
+; Maps url into server:port[,service]
 /proxy/telnet = localhost:23
 /proxy/ssh = localhost:22
 /proxy/stomp = localhost:61613,stomp
