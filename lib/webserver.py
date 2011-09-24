@@ -51,6 +51,7 @@ __status__      = "Development"
 __all__ = ["WebServer"]
 
 class StompProtocolFixer(WebSocketWrapperProtocol):
+    STOMP_FRAME_SEPARATOR="\x00\n"
     def __init__(self, *args, **kwargs):
         print "Using stomp fixer"
         WebSocketWrapperProtocol.__init__(self, *args, **kwargs)
@@ -62,21 +63,20 @@ class StompProtocolFixer(WebSocketWrapperProtocol):
 
     def write(self, data):
         # stomp broker ==> websocket
-        # Send to websocket only a complete stomp frame per write
+        # Sending a stomp frame per websocket frame
     
         if len(self._buffer):
             data = self._buffer + data
             self._buffer = ''
 
-        if not data.endswith("\x00\n"):
+        # waiting for a complete stomp frame
+        if not data.endswith(self.STOMP_FRAME_SEPARATOR):
             self._buffer += data
             return 
-            
-        if '\x00\n' in data:
-            WebSocketWrapperProtocol.writeSequence(self, data.split('\x00\n'))
-            return 
         
-        WebSocketWrapperProtocol.write(self, data)
+        # spliting multiples frames
+        WebSocketWrapperProtocol.writeSequence(self, 
+                            data.split(self.STOMP_FRAME_SEPARATOR))
 
 
 services_wrappers = { 'generic': WebSocketWrapperProtocol,
