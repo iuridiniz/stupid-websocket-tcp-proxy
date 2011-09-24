@@ -21,7 +21,6 @@ import re
 import struct
 
 from twisted.internet import interfaces
-from twisted.protocols.policies import WrappingFactory, ProtocolWrapper
 from twisted.python import log
 from twisted.web._newclient import makeStatefulDispatcher
 from twisted.protocols.policies import WrappingFactory, ProtocolWrapper
@@ -1010,7 +1009,10 @@ class WebSocketHybiFrameDecoder(WebSocketFrameDecoder):
         self._data[:] = []
         self.handler.transport.loseConnection()
 
-class WebSocketFactory(WrappingFactory):
+class WebSocketWrapperProtocol(ProtocolWrapper):
+    pass
+
+class WebSocketWrapperFactory(WrappingFactory):
     """
     Factory which wraps another factory to provide WebSockets transports for
     all of its protocols.
@@ -1045,4 +1047,4 @@ class WebSocketFactory(WrappingFactory):
         
         return handler
 
-__all__ = ["WebSocketHandler", "WebSocketSite", "WebSocketFactory"]
+__all__ = ["WebSocketHandler", "WebSocketSite", "WebSocketWrapperFactory", "WebSocketWrapperProtocol"]

@@ -32,12 +32,12 @@ import os
 from ConfigParser import SafeConfigParser as ConfigParser
 
 from twisted.protocols.portforward import ProxyFactory
-from twisted.protocols.policies import ProtocolWrapper
 
 from twisted.application import internet
 from twisted.web import static
 
-from websocket.websocket import WebSocketSite, WebSocketFactory
+from websocket.websocket import WebSocketSite
+from websocket.websocket import WebSocketWrapperProtocol, WebSocketWrapperFactory
 
 __author__      = "Iuri Gomes Diniz"
 __copyright__   = "Copyright 2011, Iuri Gomes Diniz"
@@ -51,16 +51,15 @@ __status__      = "Development"
 __all__ = ["WebServer", "getWebServer"]
 
 
-class StompProtocolFixer(ProtocolWrapper):
+class StompProtocolFixer(WebSocketWrapperProtocol):
     def __init__(self, *args, **kwargs):
         print "Using stomp fixer"
-        ProtocolWrapper.__init__(self, *args, **kwargs)
+        WebSocketWrapperProtocol.__init__(self, *args, **kwargs)
         self._buffer = ''
 
     def dataReceived(self, data):
         # websocket ==> stompbroker
-        ProtocolWrapper.dataReceived(self, data)
-        #print "ProtocolWrapper received:", repr(data)
+        WebSocketWrapperProtocol.dataReceived(self, data)
 
     def write(self, data):
         # stomp broker ==> websocket
@@ -74,16 +73,14 @@ class StompProtocolFixer(ProtocolWrapper):
             self._buffer += data
             return 
             
-        #print "ProtocolWrapper sent:", repr(data)
-
         if '\x00\n' in data:
-            ProtocolWrapper.writeSequence(self, data.split('\x00\n'))
+            WebSocketWrapperProtocol.writeSequence(self, data.split('\x00\n'))
             return 
         
-        ProtocolWrapper.write(self, data)
+        WebSocketWrapperProtocol.write(self, data)
 
 
-services_wrappers = { 'generic': ProtocolWrapper,
+services_wrappers = { 'generic': WebSocketWrapperProtocol,
                       'stomp': StompProtocolFixer}
 
 class WebServer(WebSocketSite):
@@ -128,7 +125,7 @@ class WebServer(WebSocketSite):
                 
                 proxy = ProxyFactory(tcp_host, int(tcp_port))
 
-                ws = WebSocketFactory(proxy)
+                ws = WebSocketWrapperFactory(proxy)
                 ws.protocol = services_wrappers.get(service, 
                                                 services_wrappers["generic"])
 
