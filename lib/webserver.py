@@ -37,7 +37,7 @@ from twisted.protocols.policies import ProtocolWrapper
 from twisted.application import internet
 from twisted.web import static
 
-from websocket import WebSocketSite, WebSocketFactory
+from websocket.websocket import WebSocketSite, WebSocketFactory
 
 __author__      = "Iuri Gomes Diniz"
 __copyright__   = "Copyright 2011, Iuri Gomes Diniz"
