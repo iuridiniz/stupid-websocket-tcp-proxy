@@ -32,6 +32,8 @@ import os
 from ConfigParser import SafeConfigParser as ConfigParser
 
 from twisted.protocols.portforward import ProxyFactory
+from twisted.protocols.policies import ProtocolWrapper
+
 from twisted.application import internet
 from twisted.web import static
 
@@ -48,6 +50,41 @@ __status__      = "Development"
 
 __all__ = ["WebServer", "getWebServer"]
 
+
+class StompProtocolFixer(ProtocolWrapper):
+    def __init__(self, *args, **kwargs):
+        print "Using stomp fixer"
+        ProtocolWrapper.__init__(self, *args, **kwargs)
+        self._buffer = ''
+
+    def dataReceived(self, data):
+        # websocket ==> stompbroker
+        ProtocolWrapper.dataReceived(self, data)
+        #print "ProtocolWrapper received:", repr(data)
+
+    def write(self, data):
+        # stomp broker ==> websocket
+        # Send to websocket only a complete stomp frame per write
+    
+        if len(self._buffer):
+            data = self._buffer + data
+            self._buffer = ''
+
+        if not data.endswith("\x00\n"):
+            self._buffer += data
+            return 
+            
+        #print "ProtocolWrapper sent:", repr(data)
+
+        if '\x00\n' in data:
+            ProtocolWrapper.writeSequence(self, data.split('\x00\n'))
+            return 
+        
+        ProtocolWrapper.write(self, data)
+
+
+services_wrappers = { 'generic': ProtocolWrapper,
+                      'stomp': StompProtocolFixer}
 
 class WebServer(WebSocketSite):
     def __init__(self, root, port=8080, interface='localhost'):
@@ -85,8 +122,16 @@ class WebServer(WebSocketSite):
         if config.has_section('url-maps'):
             for url, dest in config.items('url-maps'):
                 tcp_host, tcp_port = dest.split(':')
+                service = "generic"
+                if ',' in tcp_port:
+                    tcp_port, service = tcp_port.split(',')
+                
                 proxy = ProxyFactory(tcp_host, int(tcp_port))
+
                 ws = WebSocketFactory(proxy)
+                ws.protocol = services_wrappers.get(service, 
+                                                services_wrappers["generic"])
+
                 web_server.addHandler(url, ws.buildHandler)
     
         return web_server

@@ -11,6 +11,6 @@ root = public/
 ; Maps url into server:port
 /proxy/telnet = localhost:23
 /proxy/ssh = localhost:22
-/proxy/stomp = localhost:61613
+/proxy/stomp = localhost:61613,stomp
 /proxy/http = www.google.com:80
 
