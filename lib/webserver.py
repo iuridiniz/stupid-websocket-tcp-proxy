@@ -36,8 +36,8 @@ from twisted.protocols.portforward import ProxyFactory
 from twisted.application import internet
 from twisted.web import static
 
-from txWebSocket.websocket import WebSocketSite
-from txWebSocket.websocket import WebSocketWrapperProtocol, WebSocketWrapperFactory
+from websocket.websocket import WebSocketSite
+from websocket.websocket import WebSocketWrapperProtocol, WebSocketWrapperFactory
 
 __author__      = "Iuri Gomes Diniz"
 __copyright__   = "Copyright 2011, Iuri Gomes Diniz"

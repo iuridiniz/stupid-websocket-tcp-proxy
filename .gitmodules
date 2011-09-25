@@ -1,3 +1,0 @@
-[submodule "lib/txWebSocket"]
-	path = lib/txWebSocket
-	url = git@github.com:iuridiniz/txWebSocket.git
