@@ -7,6 +7,8 @@ Description
 
 **A very stupid WebSocket server in order to proxy TCP connections (using websockets with unmodified TCP servers).**
 
+Don’t reinvent the wheel, use your existing tcp servers with this STUPID proxy.
+
 It exposes an existing service over WebSocket, so a javascript application can communicate 
 with desired service. *It's necessary to use some implentation of the service protocol over WebSocket.*
 
