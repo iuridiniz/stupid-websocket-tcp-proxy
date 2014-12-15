@@ -4,7 +4,7 @@ bind = 127.0.0.1
 ; port to bind
 port = 9091
 ; path to directory where cotains files that will be served by this webserver
-; may be absolote or relative to this config file
+; may be absolute or relative to this config file
 root = public/
 
 [url-maps]
